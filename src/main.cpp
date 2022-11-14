@@ -5,8 +5,10 @@
 
 float temperatura;
 
-xSemaphoreHandle mutexI2C;
+xSemaphoreHandle mutexI2C; // Semaphore para as Tasks
 
+
+// Função que usa I2C para leitura de um sensor e para escrita no display
 float acessa_i2c(int comando)
 {
 
@@ -24,15 +26,16 @@ float acessa_i2c(int comando)
 }
 
 
+// Função que recebe a leitura do sensor 
 void le_sensor(void * params)
 {
   while(1)
   {
-    if (xSemaphoreTake(mutexI2C, 1000 / portTICK_PERIOD_MS))
+    if (xSemaphoreTake(mutexI2C, 1000 / portTICK_PERIOD_MS)) // Pega o Semaphore se ele estiver disponivel
     {
       temperatura = acessa_i2c(1);
       Serial.printf("Leitura - Temperatura lida: %f", temperatura);
-      xSemaphoreGive(mutexI2C);
+      xSemaphoreGive(mutexI2C); // Devolve o Semaphore após terminar a função
     }
     else
     {
@@ -42,16 +45,17 @@ void le_sensor(void * params)
   }
 }
 
+// Função que escreve no display
 void ldc_display(void *params)
 {
   while(1)
   {
-    if (xSemaphoreTake(mutexI2C, 1000 / portTICK_PERIOD_MS))
+    if (xSemaphoreTake(mutexI2C, 1000 / portTICK_PERIOD_MS)) // Pega o Semaphore se ele estiver disponivel
     {
       Serial.println("I2C - Escrita LCD");
       Serial.printf("Display - Escreve no LCD");
       acessa_i2c(2);
-      xSemaphoreGive(mutexI2C);
+      xSemaphoreGive(mutexI2C); // Devolve o Semaphore após terminar a função
 
     }
     else
